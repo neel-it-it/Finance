@@ -1,0 +1,77 @@
+﻿@model IEnumerable<FinanceApp.Models.Expense>
+
+	<h2>My Expenses</h2>
+
+	<div class="container">
+	<table id="expenseTable" class="table table-bordered">
+			<thead class="table-light">
+				<tr>
+					<td>Description</td>
+					<td>Amount</td>
+					<td>Category</td>
+					<td>Date</td>
+				</tr>
+			</thead>
+		
+			<tbody>
+			@foreach(var items in Model)
+			{
+				<tr>
+					<td>@items.Description</td>
+					<td>@items.Amount $</td>
+					<td>@items.Category</td>
+					<td>@items.Date.ToString("yyyy-MM-dd-tt")</td>
+				</tr>
+			}
+		</tbody>
+		<tr>
+			<td colspan="4" class="text-right">
+				<strong>Total Expenses: <span id="grandTotal">0.00</span> $</strong>
+			</td>
+		</tr>
+		</table>
+	</div>
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		let total = 0;
+		// Select all the <td> elements that contain the amount
+		// Assuming the Amount is in the second <td> of each <tr>
+		const amountCells = document.querySelectorAll('#expenseTable tbody tr td:nth-child(2)');
+
+		amountCells.forEach(cell => {
+			// Get the text, remove the '$', and parse as a number
+			const amountText = cell.textContent.replace('$', '').trim();
+			const amount = parseFloat(amountText);
+			if (!isNaN(amount)) {
+				total += amount;
+			}
+		});
+
+		// Display the total
+		document.getElementById('grandTotal').textContent = total.toFixed(2);
+	});
+</script>
+<h2>Expenses Overview</h2>
+<div>
+	<canvas style="max-width:450px; max-height:450px;" id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+	const ctx = document.getElementById('myChart');
+	fetch('/Expenses/GetChart')
+		.then(response => response.json())
+		.then(data => {
+				new Chart(ctx, {
+				  type: 'pie',
+				  data: {
+					labels: data.map(d => d.category),
+					datasets: [{
+					  data: data.map(d => d.total),
+					}]
+				  },
+	       });
+	})
+	
+</script>
